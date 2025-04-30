@@ -57,8 +57,8 @@ coverage.xml
 # Environment variables
 .env
 
-# Processed data (can be regenerated)
-processed/
+# We need to include processed data for the Streamlit Cloud deployment
+# processed/
 
 # Temporary files
 tmp/
