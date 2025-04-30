@@ -1,6 +1,7 @@
 # ======================== Import Required Libraries ========================
 import streamlit as st
 import pandas as pd
+import os
 
 # Custom functions for loading, cleaning, and visualizing the data
 from scripts.data_loader import load_data
@@ -24,8 +25,34 @@ The analysis focuses on handling missing values, duplicates, and outliers to ens
 # ======================== Load Raw Data ========================
 # Cache the raw CSV load to avoid reloading on every rerun
 @st.cache_data
-def load_raw_data():
-    return pd.read_csv("../data/raw/WHO_PM25_urban_2022.csv")
+def load_raw_data(filename="WHO_PM25_urban_2022.csv"):
+    """Load the raw data file with robust path handling"""
+    # Try multiple possible paths to find the data
+    possible_paths = [
+        f"../data/raw/{filename}",  # Relative path from streamlit_app directory
+        f"./data/raw/{filename}",   # Relative path from project root
+        f"{os.path.join(os.path.dirname(__file__), '../../data/raw', filename)}",  # Absolute path
+    ]
+    
+    # Try each path until we find the file
+    for filepath in possible_paths:
+        try:
+            st.write(f"Trying to load raw data from: {filepath}")
+            df = pd.read_csv(filepath)
+            st.success(f"Successfully loaded raw data from: {filepath}")
+            return df
+        except FileNotFoundError:
+            continue
+    
+    # If all paths fail, show a helpful error message
+    st.error(f"Could not find the raw data file '{filename}'. Please check that the data files exist.")
+    # Create a sample dataframe with a warning message
+    return pd.DataFrame({
+        'Country': ['Data file not found'],
+        'Period': ['2022'],
+        'Value': [0],
+        'Message': ['Please check repository structure or download the data file']
+    })
 
 df = load_raw_data()
 
